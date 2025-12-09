@@ -38,4 +38,14 @@ COPY ./docker/vhost.conf /etc/apache2/sites-available/000-default.conf
 EXPOSE 80
 
 # Run Apache in foreground
-CMD ["apache2-foreground"]
+# CMD ["apache2-foreground"]
+
+# Copy entrypoint script
+COPY ./docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+# Expose port 80
+EXPOSE 80
+
+# Run entrypoint
+ENTRYPOINT ["entrypoint.sh"]
