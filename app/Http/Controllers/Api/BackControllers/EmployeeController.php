@@ -53,43 +53,47 @@ class EmployeeController extends Controller
         return response()->json(['message' => 'دسترسی‌ها با موفقیت بروزرسانی شد'], Response::HTTP_OK);
     }
 
-    public function login(AdminLoginRequest $request)
-    {
-        $user = Employee::where('email', $request->email)->first();
+public function login(AdminLoginRequest $request)
+{
+    $user = Employee::where('email', $request->email)->first();
 
-        if (!$user) {
-            return response()->json([
-                'message' => 'کاربری با این ایمیل پیدا نشد'
-            ], Response::HTTP_NOT_FOUND);
-        }
-
-        if (!Hash::check($request->password, $user->password)) {
-            return response()->json([
-                'message' => 'رمز عبور اشتباه است'
-            ], Response::HTTP_UNAUTHORIZED);
-        }
-
-        // ایجاد توکن
-        $token = $user->createToken('admin_token')->plainTextToken;
-
-        // ذخیره توکن در کوکی HttpOnly
-        $cookie = cookie(
-            'admin_token', // name
-            $token,        // value
-            60 * 24,       // مدت زمان اعتبار (۱ روز)
-            '/',           // مسیر
-            null,          // دامنه (auto)
-            true,          // secure
-            true,          // httpOnly ✅
-            false,         // raw
-            'Strict'       // SameSite
-        );
-
-        return response()->json([
-            'message' => 'ورود با موفقیت انجام شد',
-            'data' => $user->only('id', 'name', 'email', 'role', 'type'),
-        ], Response::HTTP_OK)->withCookie($cookie);
+    if (!$user) {
+        return response()->json(['message' => 'کاربری با این ایمیل پیدا نشد'], 404);
     }
+
+    if (!Hash::check($request->password, $user->password)) {
+        return response()->json(['message' => 'رمز عبور اشتباه است'], 401);
+    }
+
+    // create token
+    $token = $user->createToken('admin_token')->plainTextToken;
+
+    // determine cookie settings
+    $cookieDomain = env('APP_ENV') === 'production' 
+        ? '.kpu-backend-repo.onrender.com' // your backend domain
+        : null;
+
+    $cookieSameSite = env('APP_ENV') === 'production' ? 'None' : 'Lax';
+    $cookieSecure = env('APP_ENV') === 'production';
+
+    $cookie = cookie(
+        'admin_token',
+        $token,
+        60 * 24,
+        '/',
+        $cookieDomain,
+        $cookieSecure,
+        true,  // httpOnly
+        false,
+        $cookieSameSite
+    );
+
+    return response()->json([
+        'message' => 'ورود با موفقیت انجام شد',
+        'data' => $user->only('id', 'name', 'email', 'role', 'type'),
+    ], 200)->withCookie($cookie);
+}
+
 
     public function logout(Request $request)
     {
