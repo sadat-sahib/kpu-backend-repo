@@ -53,6 +53,45 @@ class EmployeeController extends Controller
         return response()->json(['message' => 'دسترسی‌ها با موفقیت بروزرسانی شد'], Response::HTTP_OK);
     }
 
+// public function login(AdminLoginRequest $request)
+// {
+//     $user = Employee::where('email', $request->email)->first();
+
+//     if (!$user) {
+//         return response()->json(['message' => 'کاربری با این ایمیل پیدا نشد'], 404);
+//     }
+
+//     if (!Hash::check($request->password, $user->password)) {
+//         return response()->json(['message' => 'رمز عبور اشتباه است'], 401);
+//     }
+
+//     // create token
+//     $token = $user->createToken('admin_token')->plainTextToken;
+
+//     // determine cookie settings
+//     $cookieDomain = null;
+
+//     $cookieSameSite = env('APP_ENV') === 'production' ? 'None' : 'Lax';
+//     $cookieSecure = env('APP_ENV') === 'production';
+
+//     $cookie = cookie(
+//         'admin_token',
+//         $token,
+//         60 * 24,
+//         '/',
+//         $cookieDomain,
+//         $cookieSecure,
+//         true,  // httpOnly
+//         false,
+//         $cookieSameSite
+//     );
+
+//     return response()->json([
+//         'message' => 'ورود با موفقیت انجام شد',
+//         'data' => $user->only('id', 'name', 'email', 'role', 'type'),
+//     ], 200)->withCookie($cookie);
+// }
+
 public function login(AdminLoginRequest $request)
 {
     $user = Employee::where('email', $request->email)->first();
@@ -65,16 +104,10 @@ public function login(AdminLoginRequest $request)
         return response()->json(['message' => 'رمز عبور اشتباه است'], 401);
     }
 
-    // create token
     $token = $user->createToken('admin_token')->plainTextToken;
 
-    // determine cookie settings
-    $cookieDomain = env('APP_ENV') === 'production' 
-        ? '.kpu-digital-library-latest.onrender.com'
-        : null;
-
-    $cookieSameSite = env('APP_ENV') === 'production' ? 'None' : 'Lax';
-    $cookieSecure = env('APP_ENV') === 'production';
+    // SET COOKIE DOMAIN SAME AS BACKEND
+    $cookieDomain = '.kpu-backend-repo.onrender.com';
 
     $cookie = cookie(
         'admin_token',
@@ -82,18 +115,17 @@ public function login(AdminLoginRequest $request)
         60 * 24,
         '/',
         $cookieDomain,
-        $cookieSecure,
+        true,  // secure
         true,  // httpOnly
         false,
-        $cookieSameSite
+        'None'
     );
 
     return response()->json([
         'message' => 'ورود با موفقیت انجام شد',
         'data' => $user->only('id', 'name', 'email', 'role', 'type'),
-    ], 200)->withCookie($cookie);
+    ])->withCookie($cookie);
 }
-
 
     public function logout(Request $request)
     {
