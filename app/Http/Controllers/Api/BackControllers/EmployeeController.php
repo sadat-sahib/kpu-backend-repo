@@ -70,7 +70,7 @@ public function login(AdminLoginRequest $request)
 
     // determine cookie settings
     $cookieDomain = env('APP_ENV') === 'production' 
-        ? '.kpu-digital-library-latest.onrender.com' // your backend domain
+        ? '.kpu-digital-library-latest.onrender.com'
         : null;
 
     $cookieSameSite = env('APP_ENV') === 'production' ? 'None' : 'Lax';
